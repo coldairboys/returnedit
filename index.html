@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <title>还否</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="calculator-container">
+        <h1>还否</h1>
+        <div class="hero-panel">
+            <div class="hero-content">
+                <div class="hero-copy">
+                    <span class="hero-badge">Debt Dashboard Pro</span>
+                    <p class="hero-text">更清晰地管理贷款、月供、还款节奏和整体负债情况，支持自动保存与移动端浏览。</p>
+                </div>
+                <div class="hero-tips">
+                    <span class="hero-chip">自动保存</span>
+                    <span class="hero-chip">编辑项目</span>
+                    <span class="hero-chip">移动端卡片</span>
+                </div>
+            </div>
+            <div class="hero-instructions">
+                <h3>使用说明</h3>
+                <ul>
+                    <li>支持新增、编辑、删除贷款项目，并自动保存在当前浏览器。</li>
+                    <li>支持名称搜索、项目状态筛选、还款日筛选以及多种排序方式。</li>
+                    <li>手机端会自动切换为卡片视图，更方便查看。</li>
+                    <li>导出仍为 CSV，导入优先支持 CSV。</li>
+                    <li>点击“详细情况”可查看还款计划，点击“编辑”可修改项目。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button id="import-btn" class="action-btn">导入记录</button>
+            <button id="export-btn" class="action-btn">导出记录</button>
+        </div>
+
+        <div class="centered-container">
+            <div class="summary-section spotlight-card">
+                <h2>负债统计概览</h2>
+                <div class="stat-category-tabs" id="stat-tabs">
+                    <div class="stat-tab active" data-type="total">全部负债</div>
+                    <div class="stat-tab" data-type="loan">银行贷款</div>
+                    <div class="stat-tab" data-type="credit">信用卡</div>
+                    <div class="stat-tab" data-type="personal">个人借款</div>
+                </div>
+                <div class="enhanced-stats-grid" id="enhanced-stats">
+                    <!-- Dynamic stats will be inserted here -->
+                </div>
+                <div class="result-item summary-item summary-primary">
+                    <span class="label">总负债金额</span>
+                    <span class="value" id="total-loan-amount">--元</span>
+                </div>
+                <div class="summary-grid">
+                    <div class="mini-stat-card">
+                        <span class="mini-stat-label">总月供</span>
+                        <span class="mini-stat-value" id="total-monthly-payment">--元</span>
+                    </div>
+                    <div class="mini-stat-card">
+                        <span class="mini-stat-label">贷款项目数</span>
+                        <span class="mini-stat-value" id="loan-count">--个</span>
+                    </div>
+                    <div class="mini-stat-card">
+                        <span class="mini-stat-label">本月应还</span>
+                        <span class="mini-stat-value" id="current-month-payment">--元</span>
+                    </div>
+                    <div class="mini-stat-card">
+                        <span class="mini-stat-label">最近还款日</span>
+                        <span class="mini-stat-value" id="next-repayment-day">--</span>
+                    </div>
+                    <div class="mini-stat-card wide">
+                        <span class="mini-stat-label">整体已还比例</span>
+                        <span class="mini-stat-value" id="repayment-progress">--%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="horizontal-layout">
+            <div class="input-section">
+                <div class="section-title-row">
+                    <h2 id="form-title">添加贷款项目</h2>
+                    <span class="form-mode-tag" id="form-mode-tag">新增</span>
+                </div>
+
+                <div class="loan-type-selector" id="loan-type-selector">
+                    <div class="loan-type-option selected" data-type="loan">
+                        <div class="loan-type-icon">🏦</div>
+                        <div class="loan-type-label">银行贷款</div>
+                        <div class="loan-type-desc">房贷、车贷等</div>
+                    </div>
+                    <div class="loan-type-option" data-type="credit">
+                        <div class="loan-type-icon">💳</div>
+                        <div class="loan-type-label">信用卡</div>
+                        <div class="loan-type-desc">信用卡欠款</div>
+                    </div>
+                    <div class="loan-type-option" data-type="personal">
+                        <div class="loan-type-icon">👥</div>
+                        <div class="loan-type-label">个人借款</div>
+                        <div class="loan-type-desc">朋友借款等</div>
+                    </div>
+                </div>
+
+                <!-- Hidden form fields -->
+                <div style="display: none;">
+                    <div class="input-group">
+                        <label for="loan-name">贷款项目名称</label>
+                        <input type="text" id="loan-name" placeholder="请输入贷款项目名称">
+                    </div>
+
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label for="loan-amount">贷款金额（元）</label>
+                            <input type="number" id="loan-amount" placeholder="请输入贷款金额" min="1">
+                            <div class="input-hint" id="amount-hint">请输入总借款金额</div>
+                        </div>
+                        <div class="input-group">
+                            <label for="monthly-payment">月供金额（元）</label>
+                            <input type="number" id="monthly-payment" placeholder="请输入月供金额" min="1">
+                            <div class="input-hint">每月还款金额</div>
+                        </div>
+                        <div class="input-group">
+                            <label for="loan-term">贷款期限（月）</label>
+                            <input type="number" id="loan-term" placeholder="请输入贷款期限" min="1">
+                            <div class="input-hint">总还款期数</div>
+                        </div>
+                        <div class="input-group">
+                            <label for="paid-periods">已还款期数</label>
+                            <input type="number" id="paid-periods" placeholder="请输入已还款期数" min="0" value="0">
+                            <div class="input-hint">已完成的期数</div>
+                        </div>
+                        <div class="input-group">
+                            <label for="repayment-day">每月还款日</label>
+                            <input type="number" id="repayment-day" placeholder="请输入每月还款日" min="1" max="31">
+                            <div class="input-hint">每月几号还款</div>
+                        </div>
+                    </div>
+
+                    <!-- Credit card specific fields -->
+                    <div class="credit-card-fields" id="credit-card-fields">
+                        <h3>信用卡信息</h3>
+                        <div class="field-group">
+                            <div class="input-group">
+                                <label for="credit-limit">信用额度（元）</label>
+                                <input type="number" id="credit-limit" placeholder="信用卡总额度" min="0">
+                            </div>
+                            <div class="input-group">
+                                <label for="credit-used">已用额度（元）</label>
+                                <input type="number" id="credit-used" placeholder="已使用额度" min="0">
+                            </div>
+                            <div class="input-group">
+                                <label for="min-payment">最低还款额（元）</label>
+                                <input type="number" id="min-payment" placeholder="最低还款额" min="0">
+                            </div>
+                            <div class="input-group">
+                                <label for="interest-rate">日利率（%）</label>
+                                <input type="number" id="interest-rate" placeholder="日利率" min="0" max="100" step="0.0001">
+                                <div class="input-hint">例如：0.05% 写 0.05</div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>
+                                <input type="checkbox" id="is-revolving"> 是否循环利息
+                            </label>
+                            <div class="input-hint">选择后将按复利计算</div>
+                        </div>
+                    </div>
+
+                    <!-- Personal loan specific fields -->
+                    <div class="personal-loan-fields" id="personal-loan-fields">
+                        <h3>个人借款信息</h3>
+                        <div class="field-group">
+                            <div class="input-group">
+                                <label for="borrower-name">借款人姓名</label>
+                                <input type="text" id="borrower-name" placeholder="借款人姓名">
+                            </div>
+                            <div class="input-group">
+                                <label for="borrower-phone">联系方式</label>
+                                <input type="text" id="borrower-phone" placeholder="电话或微信">
+                            </div>
+                            <div class="input-group">
+                                <label for="collateral">抵押物</label>
+                                <input type="text" id="collateral" placeholder="如有抵押物">
+                            </div>
+                            <div class="input-group">
+                                <label for="contract-no">合同编号</label>
+                                <input type="text" id="contract-no" placeholder="合同编号">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>
+                                <input type="checkbox" id="is-interest-free"> 无息借款
+                            </label>
+                            <div class="input-hint">选择后将不计算利息</div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="calculate-btn">计算年化率</button>
+                        <button id="add-loan-btn">添加贷款项目</button>
+                        <button id="cancel-edit-btn" class="secondary-btn" style="display:none;">取消编辑</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <div class="section-title-row">
+                <h2>筛选与检索</h2>
+                <span class="helper-text">支持名称搜索、状态筛选与排序</span>
+            </div>
+            <div class="filter-controls advanced-filter-controls">
+                <div class="input-group">
+                    <label for="search-keyword">搜索项目</label>
+                    <input type="text" id="search-keyword" placeholder="输入贷款项目名称关键词">
+                </div>
+                <div class="input-group">
+                    <label for="status-filter">项目状态</label>
+                    <select id="status-filter">
+                        <option value="all">全部</option>
+                        <option value="active">未结清</option>
+                        <option value="completed">已结清</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="sort-type">排序方式</label>
+                    <select id="sort-type">
+                        <option value="default">默认顺序</option>
+                        <option value="repaymentDayAsc">还款日升序</option>
+                        <option value="monthlyPaymentDesc">月供从高到低</option>
+                        <option value="remainingAmountDesc">负债从高到低</option>
+                        <option value="annualRateDesc">年化率从高到低</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="filter-type">还款日筛选方式</label>
+                    <select id="filter-type">
+                        <option value="none">不按日期筛选</option>
+                        <option value="single">单个日期</option>
+                        <option value="range">日期范围</option>
+                    </select>
+                </div>
+                <div class="input-group" id="single-date-container" style="display: none;">
+                    <label for="single-date">选择日期</label>
+                    <input type="number" id="single-date" min="1" max="31" placeholder="1-31">
+                </div>
+                <div class="input-group" id="range-date-container" style="display: none;">
+                    <label for="start-date">开始日期</label>
+                    <input type="number" id="start-date" min="1" max="31" placeholder="1-31">
+                </div>
+                <div class="input-group" id="end-date-container" style="display: none;">
+                    <label for="end-date">结束日期</label>
+                    <input type="number" id="end-date" min="1" max="31" placeholder="1-31">
+                </div>
+                <div class="button-group">
+                    <button id="filter-btn">应用筛选</button>
+                    <button id="reset-filter-btn">重置</button>
+                </div>
+            </div>
+            <div class="filter-result" id="filter-result">
+                <h3>筛选结果</h3>
+                <div class="result-item">
+                    <span class="label">筛选条件：</span>
+                    <span class="value" id="filter-condition">未筛选</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">符合条件的项目数：</span>
+                    <span class="value" id="filtered-count">0个</span>
+                </div>
+                <div class="result-item">
+                    <span class="label">当期月供合计：</span>
+                    <span class="value" id="daily-payment-total">0元</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="loan-list-section">
+            <div class="section-title-row">
+                <h2>贷款项目列表</h2>
+                <span class="helper-text">桌面端表格 / 手机端卡片</span>
+            </div>
+            <div id="loan-list" class="loan-list">
+                <p class="empty-message">暂无贷款项目</p>
+            </div>
+        </div>
+
+        <!-- Personal Loan List -->
+        <div class="loan-list-section">
+            <div class="section-title-row">
+                <h2>个人借款项目列表</h2>
+                <span class="helper-text">点击上方"个人借款"添加新项目</span>
+            </div>
+            <div id="personal-loan-list" class="loan-list table-container">
+                <p class="empty-message">暂无个人借款项目</p>
+            </div>
+        </div>
+
+        <!-- Credit Card List -->
+        <div class="loan-list-section">
+            <div class="section-title-row">
+                <h2>信用卡项目列表</h2>
+                <span class="helper-text">点击上方"信用卡"添加新项目</span>
+            </div>
+            <div id="credit-card-list" class="loan-list table-container">
+                <p class="empty-message">暂无信用卡项目</p>
+            </div>
+        </div>
+
+        <div class="loan-detail-section" id="loan-detail-section" style="display: none;">
+            <h2>贷款项目信息表</h2>
+            <div id="loan-detail" class="loan-detail"></div>
+        </div>
+
+        <div class="explanation" style="display: none;">
+            <h3>使用说明</h3>
+            <p>1. 支持新增、编辑、删除贷款项目，并自动保存在当前浏览器。</p>
+            <p>2. 支持名称搜索、项目状态筛选、还款日筛选以及多种排序方式。</p>
+            <p>3. 手机端会自动切换为卡片视图，更方便查看。</p>
+            <p>4. 导出仍为 CSV，导入优先支持 CSV。</p>
+            <p>5. 点击“详细情况”可查看还款计划，点击“编辑”可修改项目。</p>
+        </div>
+
+        <!-- Back to top button -->
+        <button id="back-to-top" class="back-to-top">↑</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
